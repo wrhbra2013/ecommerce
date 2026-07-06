@@ -74,6 +74,28 @@ h1 {
   box-shadow: 0 0 0 3px rgba(255,101,0,.15);
 }
 
+.custom-domain {
+  margin-top: 8px;
+}
+
+.custom-domain input {
+  width: 100%;
+  padding: 10px 24px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color .2s;
+  background: #fff;
+  font-family: inherit;
+}
+
+.custom-domain input:focus {
+  outline: none;
+  border-color: #ff6500;
+  box-shadow: 0 0 0 3px rgba(255,101,0,.15);
+}
+
 .form-actions {
   display: flex;
   gap: 12px;

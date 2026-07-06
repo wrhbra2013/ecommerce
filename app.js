@@ -3,10 +3,44 @@
    ============================================================ */
 
 const STORAGE_PREFIX = 'vtex_snapshot_';
+const DISCOVERED_KEY = 'vtex_discovered_domains';
+
+const BUILTIN_STORES = [
+  ["www.americanas.com.br", "Americanas"],
+  ["www.animale.com.br", "Animale"],
+  ["www.aramis.com.br", "Aramis"],
+  ["www.bemol.com.br", "Bemol"],
+  ["www.brastemp.com.br", "Brastemp"],
+  ["www.cea.com.br", "C&A"],
+  ["www.cobasi.com.br", "Cobasi"],
+  ["www.consul.com.br", "Consul"],
+  ["www.drogariaspacheco.com.br", "Drogaria Pacheco"],
+  ["www.drogariasaopaulo.com.br", "Drogaria São Paulo"],
+  ["www.epocacosmeticos.com.br", "Época Cosméticos"],
+  ["www.extrafarma.com.br", "Extrafarma"],
+  ["www.farmrio.com.br", "Farm Rio"],
+  ["www.hinode.com.br", "Hinode"],
+  ["www.kopenhagen.com.br", "Kopenhagen"],
+  ["www.lojasrede.com.br", "Lojas Rede"],
+  ["www.malwee.com.br", "Malwee"],
+  ["www.oceane.com.br", "Oceane"],
+  ["www.olympikus.com.br", "Olympikus"],
+  ["www.paguemenos.com.br", "Pague Menos"],
+  ["www.pandorajoias.com.br", "Pandora Joias"],
+  ["www.rihappy.com.br", "Ri Happy"],
+  ["www.santalolla.com.br", "Santa Lolla"],
+  ["www.telhanorte.com.br", "Telhanorte"],
+  ["www.tng.com.br", "TNG"],
+  ["www.tokstok.com.br", "Tok&Stok"],
+  ["www.urbanarts.com.br", "Urban Arts"],
+  ["www.vivara.com.br", "Vivara"],
+];
 
 /* ---------- DOM refs ---------- */
 const form = document.getElementById('searchForm');
-const domainInput = document.getElementById('domain');
+const domainSelect = document.getElementById('domain');
+const customDomainInput = document.getElementById('customDomain');
+const customDomainRow = document.getElementById('customDomainRow');
 const queryInput = document.getElementById('query');
 const limitInput = document.getElementById('limit');
 const btnBuscar = document.getElementById('btnBuscar');
@@ -17,6 +51,67 @@ const totalSpan = document.getElementById('totalProdutos');
 const alteradosSpan = document.getElementById('alterados');
 const primeiraSpan = document.getElementById('primeiraVez');
 const resultsDiv = document.getElementById('results');
+
+function getDomain() {
+  if (domainSelect.value === "__outro__") {
+    return customDomainInput.value.trim();
+  }
+  return domainSelect.value;
+}
+
+function loadDiscovered() {
+  try { return JSON.parse(localStorage.getItem(DISCOVERED_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveDiscovered(list) {
+  localStorage.setItem(DISCOVERED_KEY, JSON.stringify(list));
+}
+
+function addDiscoveredDomain(domain) {
+  const list = loadDiscovered();
+  if (!list.includes(domain) && !BUILTIN_STORES.some(s => s[0] === domain)) {
+    list.push(domain);
+    saveDiscovered(list);
+    populateSelect(domain);
+  }
+}
+
+function populateSelect(selectValue) {
+  const discovered = loadDiscovered();
+  domainSelect.innerHTML = "";
+  for (const [value, label] of BUILTIN_STORES) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    domainSelect.appendChild(opt);
+  }
+  for (const domain of discovered) {
+    if (!BUILTIN_STORES.some(s => s[0] === domain)) {
+      const opt = document.createElement("option");
+      opt.value = domain;
+      opt.textContent = domain.replace(/^www\./, "").replace(/\.com\.br$/, "");
+      domainSelect.appendChild(opt);
+    }
+  }
+  const outro = document.createElement("option");
+  outro.value = "__outro__";
+  outro.textContent = "Outro (digitar domínio)";
+  domainSelect.appendChild(outro);
+  domainSelect.value = selectValue || BUILTIN_STORES[0][0];
+  toggleCustomDomain();
+}
+
+function toggleCustomDomain() {
+  customDomainRow.hidden = domainSelect.value !== "__outro__";
+  if (customDomainRow.hidden) {
+    customDomainInput.value = "";
+  } else {
+    customDomainInput.focus();
+  }
+}
+
+domainSelect.addEventListener("change", toggleCustomDomain);
 
 /* ---------- UI helpers ---------- */
 function setStatus(msg, type = 'info') {
@@ -46,7 +141,7 @@ function saveSnapshot(domain, query, data) {
 }
 
 function clearSnapshot() {
-  const domain = domainInput.value.trim();
+  const domain = getDomain();
   const query = queryInput.value.trim();
   if (domain && query) {
     localStorage.removeItem(getSnapshotKey(domain, query));
@@ -201,7 +296,7 @@ function escHtml(s) {
 
 /* ---------- Main ---------- */
 async function buscar() {
-  const domain = domainInput.value.trim();
+  const domain = getDomain();
   const query = queryInput.value.trim();
   const limit = Math.min(Math.max(parseInt(limitInput.value) || 20, 1), 200);
 
@@ -229,6 +324,7 @@ async function buscar() {
     saveSnapshot(domain, query, snapshot);
 
     render(results, isFirstRun);
+    addDiscoveredDomain(domain);
     hideStatus();
 
   } catch (err) {
@@ -253,3 +349,5 @@ btnLimpar.addEventListener('click', () => {
   summaryDiv.hidden = true;
   resultsDiv.innerHTML = '';
 });
+
+populateSelect();
