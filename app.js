@@ -162,7 +162,7 @@ async function fetchProducts(domain, query, limit) {
     headers = { "X-Vtex-Domain": domain };
   } else {
     const apiUrl = `https://${domain}/api/catalog_system/pub/products/search?${params}`;
-    url = `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`;
+    url = `https://blkproxy.vercel.app/api/proxy?url=${encodeURIComponent(apiUrl)}`;
     headers = {};
   }
   const resp = await fetch(url, { headers, signal: AbortSignal.timeout(20000) });
@@ -298,7 +298,7 @@ function escHtml(s) {
 async function buscar() {
   const domain = getDomain();
   const query = queryInput.value.trim();
-  const limit = Math.min(Math.max(parseInt(limitInput.value) || 20, 1), 200);
+  const limit = Math.min(Math.max(parseInt(limitInput.value) || 5, 1), 200);
 
   if (!domain || !query) {
     setStatus('Preencha o domínio e o termo de busca.', 'erro');
