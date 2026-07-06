@@ -14,6 +14,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith(VTEX_PATH):
             self.proxy_vtex()
+        elif self.path == "/favicon.ico":
+            self.send_response(204)
+            self.end_headers()
         else:
             super().do_GET()
 
@@ -43,7 +46,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     def log_message(self, fmt, *args):
-        print(f"[{self.log_date_time_string()}] {args[0]} {args[1]} {args[2]}", file=sys.stderr)
+        msg = " ".join(str(a) for a in args) if args else fmt
+        print(f"[{self.log_date_time_string()}] {msg}", file=sys.stderr)
 
 
 if __name__ == "__main__":

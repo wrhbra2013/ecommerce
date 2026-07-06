@@ -54,16 +54,20 @@ h1 {
   letter-spacing: .4px;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
   transition: border-color .2s;
+  background: #fff;
+  font-family: inherit;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: #ff6500;
   box-shadow: 0 0 0 3px rgba(255,101,0,.15);
