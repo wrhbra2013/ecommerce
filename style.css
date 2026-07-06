@@ -57,10 +57,11 @@ h1 {
 .field input,
 .field select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
+  font-weight: 600;
   transition: border-color .2s;
   background: #fff;
   font-family: inherit;

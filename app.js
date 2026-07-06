@@ -56,14 +56,21 @@ function clearSnapshot() {
     .forEach(k => localStorage.removeItem(k));
 }
 
-/* ---------- API (via proxy local) ---------- */
+/* ---------- API (CORS proxy) ---------- */
+const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
 async function fetchProducts(domain, query, limit) {
   const params = new URLSearchParams({ ft: query, _from: "0", _to: String(limit - 1) });
-  const url = `/api/catalog_system/pub/products/search?${params}`;
-  const resp = await fetch(url, {
-    headers: { "X-Vtex-Domain": domain },
-    signal: AbortSignal.timeout(20000),
-  });
+  let url, headers;
+  if (IS_LOCAL) {
+    url = `/api/catalog_system/pub/products/search?${params}`;
+    headers = { "X-Vtex-Domain": domain };
+  } else {
+    const apiUrl = `https://${domain}/api/catalog_system/pub/products/search?${params}`;
+    url = `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`;
+    headers = {};
+  }
+  const resp = await fetch(url, { headers, signal: AbortSignal.timeout(20000) });
   if (!resp.ok) {
     const body = await resp.json().catch(() => ({}));
     throw new Error(body.error || `HTTP ${resp.status}`);
